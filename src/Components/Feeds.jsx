@@ -2,8 +2,25 @@ import React, { useContext, useEffect, useState } from 'react'
 import { firebaseDB, firebaseStorage } from '../config/firebase';
 import { AuthContext } from '../context/AuthProvider';
 import { uuid } from 'uuidv4';
-import { Avatar } from '@material-ui/core';
-
+import {
+    Avatar,
+    Button,
+    Card,
+    CardContent,
+    CardMedia,
+    Container,
+    Fab,
+    IconButton,
+    makeStyles,
+    TextField,
+    Typography,
+    Paper,
+    Input,
+    InputAdornment,
+} from '@material-ui/core';
+import PhotoCamera from '@material-ui/icons/PhotoCamera';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 function Feeds({ props }) {
     const [feeds, setFeeds] = useState([]);
     const [file, setFile] = useState(null);
@@ -61,17 +78,85 @@ function Feeds({ props }) {
             await firebaseDB.collection("users").doc(currentUser.uid).set(document);
         }
     }
+
+    const classes = makeStyles({
+        root: {
+            margin: 40,
+        },
+        logo: {
+            width: 150,
+            marginRight: "60%",
+        },
+        button: {
+            height: 40,
+            alignItems: "center",
+            marginRight: 20,
+        },
+        header: {
+            display: "flex",
+            marginBottom: 40,
+        },
+        input: {
+            display: 'none',
+        },
+        group: {
+            display: "flex",
+            marginRight: 20,
+        },
+        videoContainer: {
+            maxWidth: "60vw",
+            margin: 10,
+        },
+        small: {
+            height: 25,
+            width: 25,
+        },
+    })();
+
     return (
-        <div>
-            <h1> Feeds </h1>
-            <button onClick={handleLogout}>Logout</button>
-            <div>
-                <input id="upload" onChange={handleInputFile} type="file" accept="images/*,video/*" />
-                <button onClick={handleUpload}>upload</button>
+        <div className={classes.root}>
+            <div className={classes.header}>
+                <CardMedia
+                    className={classes.logo}
+                    image="https://play-lh.googleusercontent.com/9ASiwrVdio0I2i2Sd1UzRczyL81piJoKfKKBoC8PUm2q6565NMQwUJCuNGwH-enhm00"
+                    title="Instagram"
+                />
+                <Button className={classes.button}
+                    variant="contained"
+                    color="primary"
+                    onClick={handleLogout}>
+                    Logout
+                </Button>
             </div>
-            <h1>Feeds Component</h1>
+            <div>
+                <input
+                    accept="image/*,video/*"
+                    className={classes.input}
+                    id="contained-button-file"
+                    multiple
+                    type="file"
+                    onChange={handleInputFile}
+                />
+                <label htmlFor="contained-button-file">
+                    <Button className={classes.button}
+                        variant="contained"
+                        color="primary" component="span">
+                        <PhotoCamera />
+                        Select File
+                    </Button>
+                </label>
+                <Button variant="contained"
+                    color="primary"
+                    component="span"
+                    onClick={handleUpload}>
+                    Upload
+                </Button>
+            </div>
+
             {feeds.map(post => {
-                return <VideoPost key={post.pid} post={post} />
+                return <Paper elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
+                    <VideoPost key={post.pid} post={post} />
+                </Paper>
             })}
         </div>
     )
@@ -92,14 +177,16 @@ const VideoPost = ({ post }) => {
             setLikes(snapshot.data().likes);
             setLikesCount(snapshot.data().likes.length);
             setComments(snapshot.data().comments);
-            snapshot.data().comments.map(comment => {
-                if (currentUser && comment.uid == currentUser.userId)
+            snapshot.data().likes.map(uid => {
+                console.log(uid, uid == currentUser.uid);
+                if (currentUser && uid == currentUser.uid)
                     setIsLiked(true);
-            })
+            });
         });
     }, []);
 
     const handleLikeBtn = () => {
+        console.log(isLiked);
         let updatedLikes = likes;
         likes.map(uid => {
             if (uid == currentUser.uid) {
@@ -122,6 +209,8 @@ const VideoPost = ({ post }) => {
     }
 
     const handleSendComment = () => {
+        if (inputValue == "")
+            return;
         console.log(user);
         let updatedComments = [...comments, {
             profile: user.profileImageUrl,
@@ -138,23 +227,66 @@ const VideoPost = ({ post }) => {
         setComments(updatedComments);
     }
 
+    const classes = makeStyles({
+        root: {
+            margin: 40,
+        },
+        button: {
+            height: 40,
+            alignItems: "center",
+            marginRight: 20,
+        },
+        group: {
+            display: "flex",
+            marginRight: 20,
+        },
+        small: {
+            height: 25,
+            width: 25,
+        },
+    })();
     return <div>
-        <div><Avatar src={user ? user.profileImageUrl : ""} />{user ? user.username : ""}</div>
+        <div className={classes.group}>
+            <Avatar src={user ? user.profileImageUrl : ""} style={{ marginLeft: 10, marginTop: 10 }} />
+            <div style={{ marginLeft: 20, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                {user ? user.username : ""}
+            </div>
+        </div>
         <video src={post.videoLink} type="video/mp4" controls={true} style={{
             height: "80vh",
-            margin: "5rem",
+            width: "60vw",
+            background: "black",
             border: "1px solid black",
         }}
             muted={true}
             loop={true} />
-        <p onClick={handleLikeBtn}><img src="" alt="like icon" /> : {likesCount}</p>
+        <p className={classes.group} onClick={handleLikeBtn}>
+            {isLiked ? <FavoriteIcon style={{ height: 30, width: 30 }} /> : <FavoriteBorderIcon style={{ height: 30, width: 30 }} />}
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                {likesCount} {likesCount > 1 ? "Likes" : "Like"}
+            </div>
+        </p>
         <div>
-            <input type="text" placeholder="add comment..." value={inputValue} onChange={(e) => { setInputValue(e.target.value) }} />
-            <button onClick={handleSendComment}>Post</button>
+            <Input
+                id="input-with-icon-adornment"
+                startAdornment={
+                    <InputAdornment position="start">
+                        <Avatar className={classes.small} src={user ? user.profileImageUrl : ""} />
+                    </InputAdornment>
+                }
+                value={inputValue}
+                onChange={(e) => { setInputValue(e.target.value) }}
+            />
+            <Button onClick={handleSendComment}
+                variant="contained"
+                color="primary"
+                component="span">Post</Button>
             {comments.map(comment => {
-                return <div key={comment.cid}>
-                    <Avatar src={comment.profile} />
-                    {comment.message}
+                return <div key={comment.cid} className={classes.group} style={{ margin: "10px 40px", }}>
+                    <Avatar className={classes.small} src={comment.profile} />
+                    <div style={{ marginLeft: 20 }}>
+                        {comment.message}
+                    </div>
                 </div>
             })}
         </div>

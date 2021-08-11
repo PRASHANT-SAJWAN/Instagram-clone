@@ -26,8 +26,8 @@ function App() {
 
 const PrivateRoute = ({ component: Component, ...props }) => {
   /// todo :: put it back for private Routing
-  // const { currentUser } = useContext(AuthContext);
-  const currentUser = true;
+  const { currentUser } = useContext(AuthContext);
+  // const currentUser = true;
   return <Route props={props} render={(props) => {
     return currentUser == null ?
       <Redirect to="/login" /> :
