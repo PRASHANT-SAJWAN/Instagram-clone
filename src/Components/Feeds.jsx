@@ -33,7 +33,7 @@ function Feeds({ props }) {
             });
             setFeeds(allPosts);
         });
-    }, []);
+    }, [firebaseDB]);
 
     const handleLogout = async () => {
         try {
@@ -78,6 +78,36 @@ function Feeds({ props }) {
             await firebaseDB.collection("users").doc(currentUser.uid).set(document);
         }
     }
+
+    let conditionObject = {
+        root: null, //observe from whole page
+        threshold: "0.6", //80%
+    };
+
+    function cb(entries) {
+        // console.log(entries);
+        entries.forEach((entry) => {
+            let child = entry.target.children[0];
+            // play(); => async
+            // pause(); => sync
+            child.play().then(function () {
+                if (entry.isIntersecting === false) {
+                    child.pause();
+                }
+            });
+        });
+    }
+
+    useEffect(() => {
+        // code which will run when the component loads
+        let observerObject = new IntersectionObserver(cb, conditionObject);
+        let elements = document.querySelectorAll(".video-container");
+        console.log(elements);
+
+        elements.forEach((el) => {
+            observerObject.observe(el); //Intersection Observer starts observing each video element
+        });
+    }, [feeds]);
 
     const classes = makeStyles({
         root: {
@@ -152,12 +182,13 @@ function Feeds({ props }) {
                     Upload
                 </Button>
             </div>
-
-            {feeds.map(post => {
-                return <Paper elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
-                    <VideoPost key={post.pid} post={post} />
-                </Paper>
-            })}
+            {feeds.length === 0 ? <Loading /> :
+                feeds.map(post => {
+                    return <Paper elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
+                        <VideoPost key={post.pid} post={post} />
+                    </Paper>
+                })
+            }
         </div>
     )
 }
@@ -252,20 +283,22 @@ const VideoPost = ({ post }) => {
                 {user ? user.username : ""}
             </div>
         </div>
-        <video src={post.videoLink} type="video/mp4" controls={true} style={{
-            height: "80vh",
-            width: "60vw",
-            background: "black",
-            border: "1px solid black",
-        }}
-            muted={true}
-            loop={true} />
-        <p className={classes.group} onClick={handleLikeBtn}>
+        <div className="video-container">
+            <video src={post.videoLink} type="video/mp4" controls={true} style={{
+                height: "80vh",
+                width: "60vw",
+                background: "black",
+                border: "1px solid black",
+            }}
+                muted={true}
+                loop={true} />
+        </div>
+        <div className={classes.group} onClick={handleLikeBtn}>
             {isLiked ? <FavoriteIcon style={{ height: 30, width: 30 }} /> : <FavoriteBorderIcon style={{ height: 30, width: 30 }} />}
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                 {likesCount} {likesCount > 1 ? "Likes" : "Like"}
             </div>
-        </p>
+        </div>
         <div>
             <Input
                 id="input-with-icon-adornment"
@@ -291,6 +324,10 @@ const VideoPost = ({ post }) => {
             })}
         </div>
     </div>;
+}
+
+const Loading = () => {
+    return <div>Loading</div>
 }
 
 export default Feeds;

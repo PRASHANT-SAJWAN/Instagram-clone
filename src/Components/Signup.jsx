@@ -26,6 +26,13 @@ function Signup(props) {
 
     const handleSignUp = async () => {
         try {
+            if (email === "" || password === "" || profileImage === null || username === "") {
+                setErrorMessage("All Fields Are Mandatory");
+                setTimeout(() => {
+                    setErrorMessage("");
+                }, 3000);
+                return;
+            }
             let response = await signup(email, password);
             let uid = response.user.uid;
             // upload profileImage in storage
