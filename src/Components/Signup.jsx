@@ -24,15 +24,26 @@ function Signup(props) {
 
     const { signup } = useContext(AuthContext);
 
+    const mandatoryFieldHelper = (fieldName) => {
+        setErrorMessage(`${fieldName} is Mandatory`);
+        setTimeout(() => {
+            setErrorMessage("");
+        }, 3000);
+    }
+    const checkValidRegister = () => {
+        if (email === "") 
+            mandatoryFieldHelper('email');
+        if (password === "")
+            mandatoryFieldHelper('password');
+        if (profileImage === "")
+            mandatoryFieldHelper('profileImage');
+        if (username === "")
+            mandatoryFieldHelper('username');
+        return (email === "" || password === "" || profileImage === "" || username === "");
+    }
     const handleSignUp = async () => {
         try {
-            if (email === "" || password === "" || profileImage === null || username === "") {
-                setErrorMessage("All Fields Are Mandatory");
-                setTimeout(() => {
-                    setErrorMessage("");
-                }, 3000);
-                return;
-            }
+            if (checkValidRegister()) return;
             let response = await signup(email, password);
             let uid = response.user.uid;
             // upload profileImage in storage
