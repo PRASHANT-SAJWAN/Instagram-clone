@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { AuthContext } from '../context/AuthProvider';
 import { Link } from 'react-router-dom';
 import {
@@ -17,8 +17,9 @@ function Login(props) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const { login } = useContext(AuthContext);
-
+    const { login, currentUser } = useContext(AuthContext);
+    useEffect(() => {
+    }, [])
     const handleLogin = async () => {
         try {
             await login(email, password);
@@ -79,13 +80,13 @@ function Login(props) {
                     <Typography className={classes.error}>{errorMessage}</Typography>
                 </div>
                 <CardContent>
-                    <TextField required id="standard-required"
+                    <TextField required id="email-required"
                         label="Email"
                         value={email}
                         onChange={(e) => { setEmail(e.target.value) }} />
                     <br />
                     <br />
-                    <TextField required id="standard-required"
+                    <TextField required id="password-required"
                         label="Password"
                         type="password"
                         value={password}

@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { firebaseDB, firebaseStorage } from '../config/firebase';
+import React, { useContext, useEffect, useState } from 'react';
+import { firebaseAuth, firebaseDB, firebaseStorage } from '../config/firebase';
 import { AuthContext } from '../context/AuthProvider';
 import { uuid } from 'uuidv4';
 import {
@@ -21,12 +21,15 @@ import {
 import PhotoCamera from '@material-ui/icons/PhotoCamera';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import { NavLink } from 'react-router-dom';
 function Feeds({ props }) {
     const [feeds, setFeeds] = useState([]);
     const [file, setFile] = useState(null);
+    const [username, setUsername] = useState("");
     const { currentUser, signOut } = useContext(AuthContext);
 
     useEffect(() => {
+        firebaseDB.collection('users').doc(currentUser.uid).get().then(user => setUsername(user.data().username));
         firebaseDB.collection('posts').get().then(snapshot => {
             let allPosts = snapshot.docs.map(doc => {
                 return doc.data();
@@ -40,7 +43,7 @@ function Feeds({ props }) {
             await signOut();
             props.history.push("/login");
         } catch (err) {
-            console.log(err);
+            // console.log(err);
         }
     }
 
@@ -54,10 +57,9 @@ function Feeds({ props }) {
         uploadFileObj.on('state_changed', fun1, fun2, fun3);
         function fun1(snapshot) {
             let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log(progress);
         }
         function fun2(err) {
-            console.log(err.message);
+            // console.log(err.message);
         }
         async function fun3() {
             let fileURL = await uploadFileObj.snapshot.ref.getDownloadURL();
@@ -85,7 +87,6 @@ function Feeds({ props }) {
     };
 
     function cb(entries) {
-        // console.log(entries);
         entries.forEach((entry) => {
             let child = entry.target.children[0];
             // play(); => async
@@ -102,7 +103,6 @@ function Feeds({ props }) {
         // code which will run when the component loads
         let observerObject = new IntersectionObserver(cb, conditionObject);
         let elements = document.querySelectorAll(".video-container");
-        console.log(elements);
 
         elements.forEach((el) => {
             observerObject.observe(el); //Intersection Observer starts observing each video element
@@ -150,6 +150,7 @@ function Feeds({ props }) {
                     className={classes.logo}
                     image="https://play-lh.googleusercontent.com/9ASiwrVdio0I2i2Sd1UzRczyL81piJoKfKKBoC8PUm2q6565NMQwUJCuNGwH-enhm00"
                     title="Instagram"
+                    alt='banner'
                 />
                 <Button className={classes.button}
                     variant="contained"
@@ -157,6 +158,16 @@ function Feeds({ props }) {
                     onClick={handleLogout}>
                     Logout
                 </Button>
+                <div>
+                    <NavLink to="/profile">
+                        <Button className={classes.button}
+                            variant="contained"
+                            color="primary">
+                            Profile
+                        </Button>
+                    </NavLink>
+                    {username}
+                </div>
             </div>
             <div>
                 <input
@@ -184,8 +195,8 @@ function Feeds({ props }) {
             </div>
             {feeds.length === 0 ? <Loading /> :
                 feeds.map(post => {
-                    return <Paper elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
-                        <VideoPost key={post.pid} post={post} />
+                    return <Paper key={post.pid} elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
+                        <VideoPost post={post} />
                     </Paper>
                 })
             }
@@ -209,7 +220,6 @@ const VideoPost = ({ post }) => {
             setLikesCount(snapshot.data().likes.length);
             setComments(snapshot.data().comments);
             snapshot.data().likes.map(uid => {
-                console.log(uid, uid == currentUser.uid);
                 if (currentUser && uid == currentUser.uid)
                     setIsLiked(true);
             });
@@ -217,17 +227,14 @@ const VideoPost = ({ post }) => {
     }, []);
 
     const handleLikeBtn = () => {
-        console.log(isLiked);
         let updatedLikes = likes;
         likes.map(uid => {
             if (uid == currentUser.uid) {
-                // console.log('already liked');
                 updatedLikes = likes.filter(uid => uid != currentUser.uid);
             }
         });
         if (isLiked == false)
             updatedLikes.push(currentUser.uid);
-        // console.log(updatedLikes.length, updatedLikes);
         setLikes(updatedLikes);
         setIsLiked(!isLiked);
         setLikesCount(updatedLikes.length);
@@ -242,7 +249,6 @@ const VideoPost = ({ post }) => {
     const handleSendComment = () => {
         if (inputValue == "")
             return;
-        console.log(user);
         let updatedComments = [...comments, {
             profile: user.profileImageUrl,
             uid: user.userId,

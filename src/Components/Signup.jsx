@@ -51,10 +51,9 @@ function Signup(props) {
             uploadPhotoObject.on("state_changed", fun1, fun2, fun3);
             function fun1(snapshot) {
                 let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(progress);
             }
             function fun2(error) {
-                console.log(error);
+                // console.log(error);
             }
             async function fun3() {
                 let profileImageURL = await uploadPhotoObject.snapshot.ref.getDownloadURL();

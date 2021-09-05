@@ -17,8 +17,14 @@ export const AuthProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        firebaseAuth.onAuthStateChanged(user => setUser(user));
-    });
+        // event attach kra hai
+        // logged In state => loggedOut state
+        // loggedOut state => loggedIn state
+        firebaseAuth.onAuthStateChanged((user) => {
+            console.log("Inside auth state changed !!", user);
+            setUser(user);
+        });
+    }, []);
 
     let value = {
         currentUser: user,
@@ -34,4 +40,4 @@ export const AuthProvider = ({ children }) => {
     )
 }
 
-export default AuthProvider
+export default AuthProvider;
