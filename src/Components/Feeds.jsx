@@ -218,6 +218,7 @@ const VideoPost = ({ post, profileImage }) => {
     const [likesCount, setLikesCount] = useState(0);
     const [comments, setComments] = useState([]);
     const { currentUser } = useContext(AuthContext);
+    const html = document.documentElement;
 
     useEffect(() => {
         firebaseDB.collection('users').doc(post.uid).get().then(user => setUser(user.data()));
@@ -270,6 +271,11 @@ const VideoPost = ({ post, profileImage }) => {
         setComments(updatedComments);
     }
 
+    const autoScrollHandler = () => {
+        // alert("Video Finished");
+        html.scrollTop += 950;
+    }
+
     const classes = makeStyles({
         root: {
             margin: 40,
@@ -296,14 +302,13 @@ const VideoPost = ({ post, profileImage }) => {
             </div>
         </div>
         <div className="video-container">
-            <video src={post.videoLink} type="video/mp4" controls={true} style={{
+            <video onEnded={autoScrollHandler} src={post.videoLink} type="video/mp4" controls={true} style={{
                 height: "80vh",
                 width: "60vw",
                 background: "black",
                 border: "1px solid black",
             }}
-                muted={true}
-                loop={true} />
+                muted={true} />
         </div>
         <div className={classes.group} onClick={handleLikeBtn}>
             {isLiked ? <FavoriteIcon style={{ height: 30, width: 30 }} /> : <FavoriteBorderIcon style={{ height: 30, width: 30 }} />}
