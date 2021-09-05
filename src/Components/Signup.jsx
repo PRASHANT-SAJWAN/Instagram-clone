@@ -31,15 +31,15 @@ function Signup(props) {
         }, 3000);
     }
     const checkValidRegister = () => {
-        if (email === "") 
+        if (email === "")
             mandatoryFieldHelper('email');
         if (password === "")
             mandatoryFieldHelper('password');
-        if (profileImage === "")
+        if (profileImage === null)
             mandatoryFieldHelper('profileImage');
         if (username === "")
             mandatoryFieldHelper('username');
-        return (email === "" || password === "" || profileImage === "" || username === "");
+        return (email === "" || password === "" || profileImage === null || username === "");
     }
     const handleSignUp = async () => {
         try {
@@ -131,6 +131,7 @@ function Signup(props) {
                                 type="file"
                                 onChange={handleProfileImageUpload}
                             />
+                            {profileImage ? "SELECTED" : "NOT SELECTED"}
                             <label htmlFor="contained-button-file">
                                 <Button variant="contained"
                                     color="primary"

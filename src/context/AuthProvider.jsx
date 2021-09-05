@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }) => {
         // logged In state => loggedOut state
         // loggedOut state => loggedIn state
         firebaseAuth.onAuthStateChanged((user) => {
-            console.log("Inside auth state changed !!", user);
             setUser(user);
         });
     }, []);

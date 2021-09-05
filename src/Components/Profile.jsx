@@ -109,7 +109,7 @@ function Profile() {
                 </NavLink>
             </div>
 
-            {posts.length === 0 ? <Loading /> :
+            {posts === [] ? <NoPosts /> :
                 posts.map(post => {
                     return <Paper elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
                         <VideoPost key={post.pid} post={post} />
@@ -119,7 +119,6 @@ function Profile() {
         </div>
     )
 }
-
 
 const VideoPost = ({ post }) => {
     const [user, setUser] = useState(null);
@@ -249,7 +248,7 @@ const VideoPost = ({ post }) => {
     </div>;
 }
 
-const Loading = () => {
-    return <div>Loading</div>
+const NoPosts = () => {
+    return <div>No Posts</div>
 }
 export default Profile;

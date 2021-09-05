@@ -26,7 +26,6 @@ function App() {
 
 const PrivateRoute = ({ component: Component, ...props }) => {
   const { currentUser } = useContext(AuthContext);
-  console.log('INSIDE PRIVATE ROUTE', currentUser);
   
   return <Route props={props} render={(props) => {
     return currentUser == null ?

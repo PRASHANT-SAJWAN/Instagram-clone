@@ -26,10 +26,14 @@ function Feeds({ props }) {
     const [feeds, setFeeds] = useState([]);
     const [file, setFile] = useState(null);
     const [username, setUsername] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
     const { currentUser, signOut } = useContext(AuthContext);
 
     useEffect(() => {
-        firebaseDB.collection('users').doc(currentUser.uid).get().then(user => setUsername(user.data().username));
+        firebaseDB.collection('users').doc(currentUser.uid).get().then(user => {
+            setUsername(user.data().username);
+            setProfileImage(user.data().profileImageUrl);
+        });
         firebaseDB.collection('posts').get().then(snapshot => {
             let allPosts = snapshot.docs.map(doc => {
                 return doc.data();
@@ -159,14 +163,16 @@ function Feeds({ props }) {
                     Logout
                 </Button>
                 <div>
-                    <NavLink to="/profile">
-                        <Button className={classes.button}
-                            variant="contained"
-                            color="primary">
-                            Profile
-                        </Button>
-                    </NavLink>
-                    {username}
+                    <div>
+                        <NavLink to="/profile">
+                            <Button className={classes.button}
+                                variant="contained"
+                                color="primary">
+                                Profile
+                            </Button>
+                        </NavLink>
+                    </div>
+                    <div>Logged in as: {username}</div>
                 </div>
             </div>
             <div>
@@ -196,7 +202,7 @@ function Feeds({ props }) {
             {feeds.length === 0 ? <Loading /> :
                 feeds.map(post => {
                     return <Paper key={post.pid} elevation={2} className={classes.videoContainer} style={{ padding: 5 }}>
-                        <VideoPost post={post} />
+                        <VideoPost post={post} profileImage={profileImage} />
                     </Paper>
                 })
             }
@@ -204,7 +210,7 @@ function Feeds({ props }) {
     )
 }
 
-const VideoPost = ({ post }) => {
+const VideoPost = ({ post, profileImage }) => {
     const [user, setUser] = useState(null);
     const [inputValue, setInputValue] = useState("");
     const [isLiked, setIsLiked] = useState(false);
@@ -250,8 +256,8 @@ const VideoPost = ({ post }) => {
         if (inputValue == "")
             return;
         let updatedComments = [...comments, {
-            profile: user.profileImageUrl,
-            uid: user.userId,
+            profile: profileImage,
+            uid: currentUser.uid,
             message: inputValue,
             cid: uuid(),
         }];
@@ -310,7 +316,7 @@ const VideoPost = ({ post }) => {
                 id="input-with-icon-adornment"
                 startAdornment={
                     <InputAdornment position="start">
-                        <Avatar className={classes.small} src={user ? user.profileImageUrl : ""} />
+                        <Avatar className={classes.small} src={profileImage ? profileImage : ""} />
                     </InputAdornment>
                 }
                 value={inputValue}
@@ -333,7 +339,7 @@ const VideoPost = ({ post }) => {
 }
 
 const Loading = () => {
-    return <div>Loading</div>
+    return <h2>Loading</h2>
 }
 
 export default Feeds;
